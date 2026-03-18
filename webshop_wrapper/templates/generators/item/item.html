@@ -1,0 +1,170 @@
+{% extends "templates/web.html" %}
+
+{% block title %} {{ title }} {% endblock %}
+
+{% block breadcrumbs %}
+<div class="item-breadcrumbs small text-muted">
+	{% include "templates/includes/breadcrumbs.html" %}
+</div>
+{% endblock %}
+
+{% block page_content %}
+<style>
+	{% include "webshop_wrapper/templates/generators/item/item_modern.css" %}
+</style>
+
+{% set hero_image = (slides[0].image if slides else doc.website_image) %}
+{% set overview_title = _("Product Overview") %}
+{% set primary_description = doc.web_long_description or doc.description %}
+{% set reviews_count = total_reviews or 0 %}
+{% set media_items = slides or [] %}
+{% set show_reviews_tab = shopping_cart.cart_settings.enable_reviews and not doc.has_variants %}
+
+<section class="wsw-product-shell" itemscope itemtype="http://schema.org/Product">
+	<div class="wsw-product-card">
+		<div class="row wsw-hero-grid">
+			<div class="col-lg-6 col-md-12 wsw-media-col">
+				<div class="wsw-media-stage">
+					{% if hero_image %}
+						<img src="{{ hero_image }}" alt="{{ doc.website_image_alt or doc.web_item_name }}" class="wsw-main-media" data-role="main-media-image">
+					{% else %}
+						<div class="wsw-main-media wsw-main-media-placeholder" data-role="main-media-image" aria-label="Product media placeholder"></div>
+					{% endif %}
+				</div>
+
+				<div class="wsw-thumb-row" role="group" aria-label="Media thumbnails">
+					{% if media_items %}
+						{% for media in media_items %}
+							<button
+								type="button"
+								class="wsw-thumb-tile {{ 'is-active' if loop.first else '' }}"
+								data-role="media-thumb"
+								data-image="{{ media.image }}"
+								aria-label="{{ media.heading or doc.web_item_name }}"
+							>
+								<img src="{{ media.image }}" alt="{{ media.heading or doc.web_item_name }}" class="wsw-thumb-image">
+							</button>
+						{% endfor %}
+					{% else %}
+						<button
+							type="button"
+							class="wsw-thumb-tile is-active"
+							data-role="media-thumb"
+							data-image="{{ doc.website_image }}"
+							aria-label="{{ doc.web_item_name }}"
+						>
+							{% if doc.website_image %}
+								<img src="{{ doc.website_image }}" alt="{{ doc.web_item_name }}" class="wsw-thumb-image">
+							{% else %}
+								<span class="wsw-thumb-placeholder"></span>
+							{% endif %}
+						</button>
+					{% endif %}
+				</div>
+			</div>
+
+			{% include "webshop_wrapper/templates/generators/item/item_details.html" %}
+		</div>
+	</div>
+</section>
+
+<section class="wsw-lower-shell wsw-content-card">
+	<div class="wsw-tab-nav" role="tablist" aria-label="Product detail tabs">
+		<button type="button" class="wsw-tab-link is-active" data-role="wsw-tab" data-target="description" aria-selected="true">
+			{{ _("Description") }}
+		</button>
+		<button type="button" class="wsw-tab-link" data-role="wsw-tab" data-target="specifications" aria-selected="false">
+			{{ _("Specifications") }}
+		</button>
+		{% if show_reviews_tab %}
+			<button type="button" class="wsw-tab-link" data-role="wsw-tab" data-target="reviews" aria-selected="false">
+				{{ _("Reviews ({0})").format(reviews_count) }}
+			</button>
+		{% endif %}
+	</div>
+
+	<div class="wsw-tab-panel is-active" data-role="wsw-panel" data-panel="description">
+		<h2 class="wsw-section-title">{{ overview_title }}</h2>
+		{% if primary_description %}
+			<div class="wsw-copy-text">{{ _(primary_description) | safe }}</div>
+		{% elif doc.website_content %}
+			<div class="wsw-copy-text">{{ doc.website_content }}</div>
+		{% else %}
+			<p class="wsw-copy-text">{{ _("No description available.") }}</p>
+		{% endif %}
+
+		{% if website_specifications %}
+			<ul class="wsw-blue-list">
+				{% for spec in website_specifications[:3] %}
+					<li>
+						{{ _(spec.label) }}
+						{% if spec.description %}
+							- {{ _(spec.description) }}
+						{% endif %}
+					</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	</div>
+
+	<div class="wsw-tab-panel" data-role="wsw-panel" data-panel="specifications">
+		{% if website_specifications %}
+			{% include "templates/generators/item/item_specifications.html" %}
+		{% else %}
+			<p class="wsw-copy-text">{{ _("Material, fit, and care information will appear here.") }}</p>
+		{% endif %}
+	</div>
+
+	{% if show_reviews_tab %}
+	<div class="wsw-tab-panel" data-role="wsw-panel" data-panel="reviews">
+		{% if shopping_cart.cart_settings.enable_reviews and not doc.has_variants %}
+			{% include "webshop_wrapper/templates/generators/item/item_reviews.html" %}
+		{% else %}
+			<p class="wsw-copy-text">{{ _("Reviews are not available for this item.") }}</p>
+		{% endif %}
+	</div>
+	{% endif %}
+</section>
+
+<script>
+	{% include "webshop_wrapper/public/js/review_modal_fix.js" %}
+
+	frappe.ready(() => {
+		$('.page_content').on('click', '[data-role="media-thumb"]', (e) => {
+			const $tile = $(e.currentTarget);
+			const image = $tile.data('image');
+			$tile.closest('.wsw-thumb-row').find('[data-role="media-thumb"]').removeClass('is-active');
+			$tile.addClass('is-active');
+
+			if (image) {
+				const $mainMedia = $('[data-role="main-media-image"]');
+				if ($mainMedia.is('img')) {
+					$mainMedia.attr('src', image);
+				} else {
+					$mainMedia.replaceWith(`<img src="${image}" alt="{{ doc.web_item_name }}" class="wsw-main-media" data-role="main-media-image">`);
+				}
+			}
+		});
+
+		$('.page_content').on('click', '[data-role="wsw-tab"]', (e) => {
+			const $tab = $(e.currentTarget);
+			const target = $tab.data('target');
+			if (!target) return;
+
+			const $root = $tab.closest('.wsw-lower-shell');
+			$root.find('[data-role="wsw-tab"]').removeClass('is-active').attr('aria-selected', 'false');
+			$tab.addClass('is-active').attr('aria-selected', 'true');
+
+			$root.find('[data-role="wsw-panel"]').removeClass('is-active');
+			$root.find(`[data-role="wsw-panel"][data-panel="${target}"]`).addClass('is-active');
+		});
+	});
+</script>
+{% endblock %}
+
+{% block base_scripts %}
+<script type="text/javascript" src="/assets/frappe/js/lib/jquery/jquery.min.js"></script>
+{{ include_script("frappe-web.bundle.js") }}
+{{ include_script("controls.bundle.js") }}
+{{ include_script("dialog.bundle.js") }}
+{% endblock %}

@@ -1,0 +1,34 @@
+{% from "webshop/templates/includes/macros.html" import user_review, ratings_summary %}
+
+<div class="mt-4 ratings-reviews-section">
+	<div class="w-100 mt-4 mb-2 d-flex">
+		<div class="reviews-header col-9">
+			{{ _("Customer Reviews") }}
+		</div>
+
+		<div class="write-a-review-btn col-3">
+			{% if frappe.session.user != "Guest" and user_is_customer %}
+				<button class="btn wsw-btn-write-review" data-web-item="{{ doc.name }}">
+					{{ _("Write a Review") }}
+				</button>
+			{% endif %}
+		</div>
+	</div>
+
+	{{ ratings_summary(reviews, reviews_per_rating, average_rating, average_whole_rating, for_summary=True, total_reviews=total_reviews) }}
+
+	<div class="mt-8">
+		{% if reviews %}
+			{{ user_review(reviews) }}
+
+			{% if total_reviews > 4 %}
+				<div class="mt-6 mb-6" style="color: var(--primary);">
+					<a href="/customer_reviews?web_item={{ doc.name }}">{{ _("View all reviews") }}</a>
+				</div>
+			{% endif %}
+
+		{% else %}
+			<h6 class="text-muted mt-6">{{ _("No Reviews") }}</h6>
+		{% endif %}
+	</div>
+</div>

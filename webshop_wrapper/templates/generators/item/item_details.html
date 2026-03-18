@@ -1,0 +1,176 @@
+{% set cart_settings = shopping_cart.cart_settings %}
+{% set product_info = shopping_cart.product_info %}
+{% set price_info = product_info.get("price") or {} %}
+{% set add_label = _("Add to Cart") %}
+{% set view_label = _("View in Cart") %}
+{% set can_add_non_variant = product_info.price and (cart_settings.allow_items_not_in_stock or product_info.get("in_stock")) %}
+{% set use_inline_variants = has_variants and (cart_settings.enable_variants | int) %}
+{% set display_name = doc.web_item_name or doc.item_name or doc.name %}
+{% set display_item_code = doc.item_code or "" %}
+{% set badge_label = (doc.item_group or _("Product")) | upper %}
+
+<div
+	class="col-lg-6 col-md-12 product-details wsw-product-details"
+	data-has-variants="{{ 1 if has_variants else 0 }}"
+	data-enable-variants="{{ cart_settings.enable_variants | int }}"
+	data-template-item-code="{{ doc.item_code }}"
+	data-show-price="{{ cart_settings.show_price | int }}"
+	data-show-stock="{{ cart_settings.show_stock_availability | int }}"
+	data-allow-out-of-stock="{{ cart_settings.allow_items_not_in_stock | int }}"
+	data-uom="{{ product_info.uom }}"
+>
+	<div class="wsw-topline-row">
+		<span class="wsw-pill">{{ badge_label }}</span>
+		<span class="wsw-sku">Item: {{ display_item_code }}</span>
+	</div>
+
+	<h1 class="product-title" itemprop="name">{{ _(display_name) }}</h1>
+
+	{% if shopping_cart and cart_settings.enabled %}
+	<div class="wsw-purchase-panel">
+		<div class="wsw-price-slot" data-role="price-slot">
+			{% if not use_inline_variants and cart_settings.show_price and product_info.price %}
+				<div class="product-price" itemprop="offers" itemscope itemtype="https://schema.org/AggregateOffer">
+					<span itemprop="highPrice" content="{{ price_info.formatted_price_sales_uom }}">{{ price_info.formatted_price_sales_uom }}</span>
+					{% if price_info.formatted_mrp %}
+						<small itemprop="highPrice" class="formatted-price"><s>{{ price_info.formatted_mrp }}</s></small>
+					{% endif %}
+				</div>
+			{% elif use_inline_variants %}
+				<div class="wsw-muted-meta">{{ _("Select color and size for live price") }}</div>
+			{% elif cart_settings.show_price %}
+				<div class="wsw-muted-meta">{{ _("Price unavailable") }}</div>
+			{% else %}
+				<div class="wsw-muted-meta">{{ _("UOM") }}: {{ product_info.uom }}</div>
+			{% endif %}
+		</div>
+
+		<div class="wsw-stock-slot" data-role="stock-slot">
+			{% if cart_settings.show_stock_availability and not use_inline_variants %}
+				{% if product_info.get("on_backorder") %}
+					<span class="no-stock out-of-stock">{{ _("Available on backorder") }}</span>
+				{% elif product_info.in_stock == 0 %}
+					<span class="no-stock out-of-stock">{{ _("Out of stock") }}</span>
+				{% elif product_info.in_stock == 1 %}
+					<span class="in-green has-stock">
+						<span class="wsw-check-icon">&#10003;</span>{{ _("In Stock") }}
+						{% if product_info.show_stock_qty and product_info.stock_qty %}
+							({{ product_info.stock_qty }})
+						{% endif %}
+					</span>
+				{% endif %}
+			{% elif use_inline_variants %}
+				<span class="wsw-muted-meta">{{ _("Select options to view stock status") }}</span>
+			{% endif %}
+		</div>
+
+		{% if use_inline_variants %}
+			<div class="wsw-variants-block" data-role="variants-root">
+				<div class="wsw-variants-title">{{ _("Color, Size") }}</div>
+				<div class="wsw-variants-controls" data-role="variant-controls"></div>
+				<div class="wsw-variant-feedback" data-role="variant-feedback">
+					{{ _("Select all required attributes to enable") }} {{ add_label }}.
+				</div>
+			</div>
+		{% endif %}
+
+		<div class="wsw-action-block">
+			<div class="wsw-action-row">
+				<div class="wsw-qty-control" aria-label="Quantity selector">
+					<button type="button" class="wsw-qty-btn" data-role="qty-minus" aria-label="Decrease quantity">-</button>
+					<input type="number" class="wsw-qty-input" data-role="qty-input" min="1" step="1" value="1" aria-label="Quantity">
+					<button type="button" class="wsw-qty-btn" data-role="qty-plus" aria-label="Increase quantity">+</button>
+				</div>
+				{% if not has_variants or use_inline_variants %}
+					<button
+						data-item-code="{{ doc.item_code if not use_inline_variants else '' }}"
+						class="btn btn-primary btn-add-to-cart wsw-primary-cta"
+						{{ 'disabled' if (use_inline_variants or not can_add_non_variant) else '' }}
+					>
+						<span class="wsw-btn-icon" aria-hidden="true">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+								<polyline points="14 2 14 8 20 8"></polyline>
+								<line x1="8" y1="13" x2="16" y2="13"></line>
+							</svg>
+						</span>
+						{{ add_label }}
+					</button>
+				{% endif %}
+			</div>
+
+			<a href="/cart" class="btn btn-light btn-view-in-cart hidden wsw-view-quote" role="button">{{ view_label }}</a>
+
+			{% if cart_settings.enable_wishlist %}
+				<button
+					type="button"
+					class="btn btn-light wsw-btn-wishlist like-action-item-fp like-action {{ 'like-action-wished' if wished else '' }}"
+					data-item-code="{{ doc.item_code }}"
+				>
+					<span class="wsw-heart-icon" aria-hidden="true">
+						<svg class="wish-icon {{ 'wished' if wished else 'not-wished' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L5 13.5 12 20.5l7-7a5 5 0 0 0 0-7z"></path>
+						</svg>
+					</span>
+					{{ _("Add to Wishlist") }}
+				</button>
+			{% endif %}
+		</div>
+
+		{% if doc.offers or website_specifications %}
+			<div class="wsw-trust-grid">
+				{% if doc.offers %}
+					{% for offer in doc.offers[:2] %}
+						<div class="wsw-trust-card">
+							<div class="wsw-trust-title">{{ _(offer.offer_title) }}</div>
+							<div class="wsw-trust-copy">{{ _(offer.offer_subtitle) if offer.offer_subtitle else _("Offer available") }}</div>
+						</div>
+					{% endfor %}
+				{% else %}
+					{% for spec in website_specifications[:2] %}
+						<div class="wsw-trust-card">
+							<div class="wsw-trust-title">{{ _(spec.label) }}</div>
+							<div class="wsw-trust-copy">{{ _(spec.description) }}</div>
+						</div>
+					{% endfor %}
+				{% endif %}
+			</div>
+		{% endif %}
+
+		{% if doc.offers %}
+			<div class="wsw-offers-block">
+				<div class="offers-heading">
+					<span class="tag-icon">
+						<svg class="icon icon-md"><use href="#icon-tag"></use></svg>
+					</span>
+					<b>{{ _("Available Offers") }}</b>
+				</div>
+				<div class="offer-container">
+					{% for offer in doc.offers %}
+						<div class="d-flex align-items-start">
+							<span class="wsw-offer-bullet">•</span>
+							<p>
+								{{ _(offer.offer_title) }}:
+								{{ _(offer.offer_subtitle) if offer.offer_subtitle else "" }}
+								<a
+									class="offer-details"
+									href="#"
+									data-offer-title="{{ offer.offer_title }}"
+									data-offer-id="{{ offer.name }}"
+									role="button"
+								>
+									{{ _("More") }}
+								</a>
+							</p>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		{% endif %}
+	</div>
+	{% endif %}
+</div>
+
+<script>
+	{% include "webshop_wrapper/templates/generators/item/item_inline_variants.js" %}
+</script>

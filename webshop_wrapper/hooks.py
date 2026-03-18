@@ -133,6 +133,8 @@ app_license = "mit"
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
+override_doctype_class = {"Website Item": "webshop_wrapper.overrides.website_item.WebshopWrapperWebsiteItem"}
+
 # Document Events
 # ---------------
 # Hook on document methods and events
@@ -246,4 +248,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
