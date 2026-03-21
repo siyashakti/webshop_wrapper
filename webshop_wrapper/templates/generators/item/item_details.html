@@ -1,8 +1,8 @@
 {% set cart_settings = shopping_cart.cart_settings %}
 {% set product_info = shopping_cart.product_info %}
 {% set price_info = product_info.get("price") or {} %}
-{% set add_label = _("Add to Cart") %}
-{% set view_label = _("View in Cart") %}
+{% set add_label = _("Add to Cart") if cart_settings.enable_checkout else _("Add to Quote") %}
+{% set view_label = _("View in Cart") if cart_settings.enable_checkout else _("View in Quote") %}
 {% set can_add_non_variant = product_info.price and (cart_settings.allow_items_not_in_stock or product_info.get("in_stock")) %}
 {% set use_inline_variants = has_variants and (cart_settings.enable_variants | int) %}
 {% set display_name = doc.web_item_name or doc.item_name or doc.name %}
@@ -54,9 +54,9 @@
 				{% elif product_info.in_stock == 1 %}
 					<span class="in-green has-stock">
 						<span class="wsw-check-icon">&#10003;</span>{{ _("In Stock") }}
-						{% if product_info.show_stock_qty and product_info.stock_qty %}
+						<!--{% if product_info.show_stock_qty and product_info.stock_qty %}
 							({{ product_info.stock_qty }})
-						{% endif %}
+						{% endif %}-->
 					</span>
 				{% endif %}
 			{% elif use_inline_variants %}
@@ -84,14 +84,12 @@
 				{% if not has_variants or use_inline_variants %}
 					<button
 						data-item-code="{{ doc.item_code if not use_inline_variants else '' }}"
-						class="btn btn-primary btn-add-to-cart wsw-primary-cta"
+						class="btn btn-primary btn-add-to-cart w-100"
 						{{ 'disabled' if (use_inline_variants or not can_add_non_variant) else '' }}
 					>
-						<span class="wsw-btn-icon" aria-hidden="true">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-								<polyline points="14 2 14 8 20 8"></polyline>
-								<line x1="8" y1="13" x2="16" y2="13"></line>
+						<span class="mr-2" aria-hidden="true">
+							<svg class="icon icon-md">
+								<use href="#icon-assets"></use>
 							</svg>
 						</span>
 						{{ add_label }}
@@ -99,7 +97,7 @@
 				{% endif %}
 			</div>
 
-			<a href="/cart" class="btn btn-light btn-view-in-cart hidden wsw-view-quote" role="button">{{ view_label }}</a>
+			<a href="/cart" class="btn btn-light btn-view-in-cart hidden font-md w-100" role="button">{{ view_label }}</a>
 
 			{% if cart_settings.enable_wishlist %}
 				<button
