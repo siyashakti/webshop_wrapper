@@ -1,12 +1,12 @@
 {% from "webshop/templates/includes/macros.html" import user_review, ratings_summary %}
 
-<div class="mt-4 ratings-reviews-section">
-	<div class="w-100 mt-4 mb-2 d-flex">
-		<div class="reviews-header col-9">
+<div class="mt-4 ratings-reviews-section wsw-reviews-section">
+	<div class="wsw-reviews-toolbar">
+		<div class="reviews-header wsw-reviews-title">
 			{{ _("Customer Reviews") }}
 		</div>
 
-		<div class="write-a-review-btn col-3">
+		<div class="write-a-review-btn wsw-reviews-action">
 			{% if frappe.session.user != "Guest" and user_is_customer %}
 				<button class="btn wsw-btn-write-review" data-web-item="{{ doc.name }}">
 					{{ _("Write a Review") }}
