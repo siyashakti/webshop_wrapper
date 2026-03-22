@@ -7,7 +7,7 @@ from webshop.webshop.doctype.override_doctype.item_group import get_child_groups
 from webshop.webshop.product_data_engine.filters import ProductFiltersBuilder
 from webshop.webshop.product_data_engine.query import ProductQuery
 from webshop.webshop.shopping_cart.product_info import get_product_info_for_website
-from webshop.webshop.utils.product import get_web_item_qty_in_stock
+from webshop_wrapper.variant_defaults import pick_default_variant_item_code
 
 
 @frappe.whitelist(allow_guest=True)
@@ -71,7 +71,7 @@ class WrapperProductQuery(ProductQuery):
 		for item in result:
 			listing_item_code = item.item_code
 			if item.get("has_variants"):
-				default_variant = get_default_variant_item_code(item.item_code)
+				default_variant = pick_default_variant_item_code(item.item_code)
 				if default_variant:
 					listing_item_code = default_variant
 					item.item_code = default_variant
@@ -96,29 +96,3 @@ class WrapperProductQuery(ProductQuery):
 				item.wished = True
 
 		return result, discount_list
-
-
-def get_default_variant_item_code(template_item_code):
-	if not template_item_code:
-		return None
-
-	variant_codes = frappe.get_all(
-		"Item",
-		filters={"variant_of": template_item_code, "disabled": 0},
-		pluck="item_code",
-		order_by="item_code asc",
-	)
-
-	if not variant_codes:
-		return None
-
-	item_qty = {}
-	for code in variant_codes:
-		stock_info = get_web_item_qty_in_stock(code, "website_warehouse")
-		item_qty[code] = stock_info.stock_qty or 0
-
-	in_stock_codes = [code for code in variant_codes if item_qty.get(code, 0) > 0]
-	if in_stock_codes:
-		return in_stock_codes[0]
-
-	return variant_codes[0]
