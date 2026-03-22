@@ -29,8 +29,8 @@ app_license = "mit"
 # app_include_js = "/assets/webshop_wrapper/js/webshop_wrapper.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/webshop_wrapper/css/webshop_wrapper.css"
-# web_include_js = "/assets/webshop_wrapper/js/webshop_wrapper.js"
+web_include_css = "/assets/webshop_wrapper/css/store_navbar.css"
+web_include_js = "/assets/webshop_wrapper/js/store_navbar.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "webshop_wrapper/public/scss/website"
@@ -200,6 +200,8 @@ override_doctype_class = {"Website Item": "webshop_wrapper.overrides.website_ite
 # ----------------
 # before_request = ["webshop_wrapper.utils.before_request"]
 # after_request = ["webshop_wrapper.utils.after_request"]
+
+update_website_context = ["webshop_wrapper.website.navbar.update_website_context"]
 
 # Job Events
 # ----------

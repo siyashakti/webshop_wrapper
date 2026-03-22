@@ -1,0 +1,62 @@
+{% extends "templates/web.html" %}
+{% from "webshop/templates/includes/macros.html" import item_card %}
+
+{% block title %}{{ _(title or "Store Home") }}{% endblock %}
+
+{% block page_content %}
+<div class="store-home">
+	{% if slideshow %}
+	<div class="store-home-hero">
+		{{ web_block(
+			"Hero Slider",
+			values=slideshow,
+			add_container=0,
+			add_top_padding=0,
+			add_bottom_padding=0,
+		) }}
+	</div>
+	{% endif %}
+
+	{% for collection in collections %}
+	<section class="store-home-section">
+		<div class="item-group-header d-flex justify-content-between">
+			<div class="title-section">
+				<h2 class="section-title">{{ _(collection.title) }}</h2>
+			</div>
+			<div class="primary-action-section">
+				{% if collection.item_group_route %}
+				<a href="/{{ collection.item_group_route }}" class="btn btn-primary pull-right">
+					{{ _("Shop Now") }}
+				</a>
+				{% endif %}
+			</div>
+		</div>
+		<div class="row item-card-group-section">
+			{% for item in collection["items"] %}
+				{{ item_card(item, is_featured=False, is_full_width=True, align="Center") }}
+			{% endfor %}
+		</div>
+	</section>
+	{% endfor %}
+
+	{% if top_sellers %}
+	<section class="store-home-section">
+		<div class="item-group-header d-flex justify-content-between">
+			<div class="title-section">
+				<h2 class="section-title">{{ _("Top Sellers") }}</h2>
+			</div>
+			<div class="primary-action-section">
+				<a href="/all-products" class="btn btn-primary pull-right">
+					{{ _("View All") }}
+				</a>
+			</div>
+		</div>
+		<div class="row item-card-group-section">
+			{% for item in top_sellers %}
+				{{ item_card(item, is_featured=False, is_full_width=True, align="Center") }}
+			{% endfor %}
+		</div>
+	</section>
+	{% endif %}
+</div>
+{% endblock %}

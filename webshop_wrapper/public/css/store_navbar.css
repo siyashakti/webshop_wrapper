@@ -1,0 +1,27 @@
+.navbar .navbar-brand {
+	font-weight: 700;
+	font-size: 1rem;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+}
+
+@media (min-width: 992px) {
+	.navbar .dropdown:hover > .dropdown-menu,
+	.navbar .dropdown-submenu:hover > .dropdown-menu {
+		display: block;
+	}
+
+	.navbar .dropdown-menu {
+		margin-top: 0;
+	}
+
+	.navbar .dropdown-submenu {
+		position: relative;
+	}
+
+	.navbar .dropdown-submenu > .dropdown-menu {
+		top: 0;
+		left: 100%;
+		margin-left: 0.1rem;
+	}
+}
