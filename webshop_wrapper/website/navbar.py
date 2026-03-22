@@ -8,7 +8,20 @@ MAX_DEPTH = 3
 
 def update_website_context(context):
 	context.top_bar_items = build_top_bar_items()
-	context.brand_html = get_brand_html()
+	context.footer_items = get_footer_links()
+
+	app_name = get_website_app_name()
+	app_logo = get_website_app_logo()
+
+	context.store_brand_name = app_name
+	context.store_brand_logo = app_logo
+
+	if app_logo:
+		context.banner_image = app_logo
+		context.brand_html = None
+	else:
+		context.banner_image = None
+		context.brand_html = app_name
 
 
 def build_top_bar_items():
@@ -97,11 +110,18 @@ def normalize(value):
 	return "".join(char for char in (value or "").lower().strip() if char.isalnum())
 
 
-def get_brand_html():
-	company = frappe.db.get_single_value("Global Defaults", "default_company")
-	if company:
-		company_name = frappe.db.get_value("Company", company, "company_name")
-		if company_name:
-			return company_name
-
+def get_website_app_name():
 	return frappe.get_website_settings("app_name") or _("Store")
+
+
+def get_website_app_logo():
+	return frappe.get_website_settings("app_logo")
+
+
+def get_footer_links():
+	return [
+		{"label": _("Size Chart"), "url": "/size-chart", "right": 0, "open_in_new_tab": 0},
+		{"label": _("Mens Products"), "url": "/men", "right": 0, "open_in_new_tab": 0},
+		{"label": _("Womens Products"), "url": "/women", "right": 1, "open_in_new_tab": 0},
+		{"label": _("Contact"), "url": "/contact", "right": 1, "open_in_new_tab": 0},
+	]

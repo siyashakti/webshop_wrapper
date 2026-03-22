@@ -1,0 +1,19 @@
+<footer class="web-footer store-footer">
+	<div class="container">
+		<div class="store-footer__inner">
+			<div class="store-footer__links">
+				{% for item in footer_items if item.label and not (item.parent_label or item.child_items) %}
+					<a class="store-footer__link" href="{{ item.url | abs_url }}" {% if item.open_in_new_tab %}target="_blank"{% endif %}>
+						{{ _(item.label) }}
+					</a>
+				{% endfor %}
+			</div>
+			<div class="store-footer__brand">
+				{% if store_brand_logo %}
+					<img src="{{ store_brand_logo }}" alt="{{ store_brand_name }}" class="store-footer__brand-logo">
+				{% endif %}
+				<span class="store-footer__brand-name">{{ store_brand_name or _("Store") }}</span>
+			</div>
+		</div>
+	</div>
+</footer>

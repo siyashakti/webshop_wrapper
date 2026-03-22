@@ -7,8 +7,13 @@ frappe.ready(() => {
 		const $target = $(event.currentTarget);
 		const href = $target.attr("href");
 
-		if (!href || href === "#") {
+		if (href && href !== "#") {
 			event.preventDefault();
+			event.stopPropagation();
+			window.location.href = href;
+			return;
 		}
+
+		event.preventDefault();
 	});
 });
