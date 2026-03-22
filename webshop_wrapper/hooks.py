@@ -176,9 +176,9 @@ override_doctype_class = {"Website Item": "webshop_wrapper.overrides.website_ite
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "webshop_wrapper.event.get_events"
-# }
+override_whitelisted_methods = {
+	"webshop.webshop.api.get_product_filter_data": "webshop_wrapper.api.product_listing.get_product_filter_data"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
