@@ -3,6 +3,10 @@ from frappe import _
 
 
 ROOT_LABELS = ("Men", "Women")
+ROOT_ALIASES = {
+	"men": {"men", "mens"},
+	"women": {"women", "womens"},
+}
 MAX_DEPTH = 3
 
 
@@ -51,6 +55,7 @@ def get_website_groups():
 		"Item Group",
 		filters={"route": ["is", "set"]},
 		fields=["name", "item_group_name", "parent_item_group", "route", "lft"],
+		order_by="lft asc",
 	)
 
 
@@ -59,7 +64,9 @@ def get_root_groups(groups):
 	selected_names = set()
 
 	for label in ROOT_LABELS:
-		match = next((group for group in groups if is_root_match(group, label)), None)
+		matches = [group for group in groups if is_root_match(group, label)]
+		matches.sort(key=lambda group: (route_depth(group.route), group.lft or 0, group.name))
+		match = matches[0] if matches else None
 		if match and match.name not in selected_names:
 			selected.append(match)
 			selected_names.add(match.name)
@@ -73,11 +80,18 @@ def get_root_groups(groups):
 
 
 def is_root_match(group, label):
-	label_key = normalize(group.item_group_name or group.name)
+	label_key = normalize(group.item_group_name or "")
 	name_key = normalize(group.name or "")
-	route_key = normalize((group.route or "").split("/")[0])
+	route_key = normalize(group.route or "")
 	root_key = normalize(label)
-	return root_key in {label_key, name_key, route_key}
+	aliases = ROOT_ALIASES.get(root_key, {root_key})
+	return bool({label_key, name_key, route_key}.intersection(aliases))
+
+
+def route_depth(route):
+	if not route:
+		return 999
+	return route.count("/") + 1
 
 
 def build_node(group, children_by_parent, depth):
