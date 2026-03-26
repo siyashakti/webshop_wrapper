@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 
-
 ROOT_LABELS = ("Men", "Women")
 ROOT_ALIASES = {
 	"men": {"men", "mens"},
@@ -12,7 +11,9 @@ MAX_DEPTH = 3
 
 def update_website_context(context):
 	context.top_bar_items = build_top_bar_items()
-	context.footer_items = get_footer_links()
+	context.footer_groups = get_footer_groups()
+	context.footer_items = [link for group in context.footer_groups for link in group.get("links", [])]
+	context.footer_locale = {"language": _("English"), "country": _("India")}
 
 	app_name = get_website_app_name()
 	app_logo = get_website_app_logo()
@@ -138,4 +139,50 @@ def get_footer_links():
 		{"label": _("Mens Products"), "url": "/men", "right": 0, "open_in_new_tab": 0},
 		{"label": _("Womens Products"), "url": "/women", "right": 1, "open_in_new_tab": 0},
 		{"label": _("Contact"), "url": "/contact", "right": 1, "open_in_new_tab": 0},
+	]
+
+
+def get_footer_groups():
+	return [
+		{
+			"title": _("Get to know us"),
+			"links": [
+				{"label": _("About"), "url": "/about", "open_in_new_tab": 0},
+			],
+		},
+		{
+			"title": _("Connect with us"),
+			"links": [
+				{"label": _("Twitter"), "url": "#", "open_in_new_tab": 1},
+				{"label": _("Instagram"), "url": "#", "open_in_new_tab": 1},
+				{"label": _("Facebook"), "url": "#", "open_in_new_tab": 1},
+			],
+		},
+		{
+			"title": _("Quick Access"),
+			"links": [
+				{"label": _("Your Account"), "url": "/me", "open_in_new_tab": 0},
+				{"label": _("Orders"), "url": "/orders", "open_in_new_tab": 0},
+				{"label": _("Addresses"), "url": "/addresses", "open_in_new_tab": 0},
+			],
+		},
+		{
+			"title": _("Legal"),
+			"links": [
+				{"label": _("Privacy Policy"), "url": "/privacy-policy", "open_in_new_tab": 0},
+				{
+					"label": _("Terms and Conditions"),
+					"url": "/terms-and-conditions",
+					"open_in_new_tab": 0,
+				},
+				{"label": _("Cookie Policy"), "url": "/cookie-policy", "open_in_new_tab": 0},
+				{"label": _("Shipping & Delivery"), "url": "/shipping-delivery-policy", "open_in_new_tab": 0},
+				{
+					"label": _("Return, Refund & Cancellation"),
+					"url": "/return-refund-cancellation",
+					"open_in_new_tab": 0,
+				},
+				{"label": _("Grievance Redressal"), "url": "/grievance-redressal", "open_in_new_tab": 0},
+			],
+		},
 	]

@@ -45,7 +45,10 @@
 					this.validOptions[attr.attribute] = new Set(attr.values || []);
 				});
 				this.renderControls();
-				this.setFeedback("{{ _('Select options to enable add to cart.') }}", "");
+				const preselected = await this.applyDefaultVariantSelection();
+				if (!preselected) {
+					this.setFeedback("{{ _('Select options to enable add to cart.') }}", "");
+				}
 			} catch (e) {
 				this.setFeedback("{{ _('Could not load variants. Please refresh and try again.') }}", "error");
 			}
@@ -385,6 +388,24 @@
 				item_code: this.itemCode,
 				selected_attributes: selectedAttributes,
 			});
+		}
+
+		getDefaultVariantSelection() {
+			return this.call("webshop_wrapper.api.variant_selector.get_default_variant_selection", {
+				item_code: this.itemCode,
+			});
+		}
+
+		async applyDefaultVariantSelection() {
+			const data = await this.getDefaultVariantSelection();
+			if (!data || !data.default_variant_item_code) {
+				return false;
+			}
+
+			this.selected = data.selected_attributes || {};
+			this.renderControls();
+			await this.onSelectionChange();
+			return true;
 		}
 
 		call(method, args) {

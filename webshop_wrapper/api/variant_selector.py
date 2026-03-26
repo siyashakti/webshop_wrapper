@@ -5,6 +5,12 @@ from webshop.webshop.variant_selector.utils import get_item_variant_price_dict
 from webshop.webshop.variant_selector.item_variants_cache import ItemVariantsCacheManager
 from webshop.webshop.doctype.webshop_settings.webshop_settings import get_shopping_cart_settings
 from webshop.webshop.utils.product import get_web_item_qty_in_stock
+from webshop_wrapper.variant_defaults import get_variant_selection_data
+
+
+@frappe.whitelist(allow_guest=True)
+def get_default_variant_selection(item_code):
+	return get_variant_selection_data(item_code)
 
 
 @frappe.whitelist(allow_guest=True)

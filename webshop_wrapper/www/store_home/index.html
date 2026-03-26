@@ -1,5 +1,4 @@
 {% extends "templates/web.html" %}
-{% from "webshop/templates/includes/macros.html" import item_card %}
 
 {% block title %}{{ _(title or "Store Home") }}{% endblock %}
 
@@ -17,46 +16,106 @@
 	</div>
 	{% endif %}
 
-	{% for collection in collections %}
-	<section class="store-home-section">
+	{% for section in sections %}
+	<section class="store-home-section" data-role="carousel-section" data-index="{{ loop.index0 }}">
 		<div class="item-group-header d-flex justify-content-between">
 			<div class="title-section">
-				<h2 class="section-title">{{ _(collection.title) }}</h2>
+				<h2 class="section-title">{{ _(section.title) }}</h2>
 			</div>
 			<div class="primary-action-section">
-				{% if collection.item_group_route %}
-				<a href="/{{ collection.item_group_route }}" class="btn btn-primary pull-right">
-					{{ _("Shop Now") }}
+				{% if section.item_group_route %}
+				<a href="/{{ section.item_group_route }}" class="btn btn-primary pull-right">
+					{{ _(section.cta_label or "Show More") }}
 				</a>
 				{% endif %}
 			</div>
 		</div>
-		<div class="row item-card-group-section">
-			{% for item in collection["items"] %}
-				{{ item_card(item, is_featured=False, is_full_width=True, align="Center") }}
-			{% endfor %}
+
+		<div class="store-home-carousel">
+			<button type="button" class="store-home-nav store-home-nav-prev" data-role="carousel-prev" aria-label="{{ _('Previous') }}">
+				<span aria-hidden="true">&#8249;</span>
+			</button>
+			<div class="store-home-viewport" data-role="carousel-viewport">
+				<div class="store-home-track" data-role="carousel-track"></div>
+			</div>
+			<button type="button" class="store-home-nav store-home-nav-next" data-role="carousel-next" aria-label="{{ _('Next') }}">
+				<span aria-hidden="true">&#8250;</span>
+			</button>
 		</div>
+
+		<script type="application/json" data-role="section-items">{{ section["items"] | tojson }}</script>
 	</section>
 	{% endfor %}
-
-	{% if top_sellers %}
-	<section class="store-home-section">
-		<div class="item-group-header d-flex justify-content-between">
-			<div class="title-section">
-				<h2 class="section-title">{{ _("Top Sellers") }}</h2>
-			</div>
-			<div class="primary-action-section">
-				<a href="/all-products" class="btn btn-primary pull-right">
-					{{ _("View All") }}
-				</a>
-			</div>
-		</div>
-		<div class="row item-card-group-section">
-			{% for item in top_sellers %}
-				{{ item_card(item, is_featured=False, is_full_width=True, align="Center") }}
-			{% endfor %}
-		</div>
-	</section>
-	{% endif %}
 </div>
+
+<script>
+	frappe.ready(() => {
+		const settings = {{ card_settings | tojson }};
+
+		const sections = $('[data-role="carousel-section"]');
+		sections.each((_, element) => {
+			const $section = $(element);
+			const $track = $section.find('[data-role="carousel-track"]');
+			const $viewport = $section.find('[data-role="carousel-viewport"]');
+			const $prev = $section.find('[data-role="carousel-prev"]');
+			const $next = $section.find('[data-role="carousel-next"]');
+			const jsonElement = $section.find('script[data-role="section-items"]')[0];
+
+			let items = [];
+			if (jsonElement && jsonElement.textContent) {
+				items = JSON.parse(jsonElement.textContent || '[]');
+			}
+
+			if (!$track.length || !items.length) {
+				$section.addClass('is-empty');
+				return;
+			}
+
+			new webshop.ProductGrid({
+				items,
+				products_section: $track,
+				settings,
+				preference: 'Grid View',
+			});
+
+			const getStep = () => {
+				const card = $track.find('.item-card').first()[0];
+				if (!card) return 0;
+				const cardStyle = window.getComputedStyle(card);
+				const marginLeft = parseFloat(cardStyle.marginLeft) || 0;
+				const marginRight = parseFloat(cardStyle.marginRight) || 0;
+				return card.getBoundingClientRect().width + marginLeft + marginRight;
+			};
+
+			const cardsPerStep = () => {
+				if (window.innerWidth < 768) return 1;
+				if (window.innerWidth < 1200) return 2;
+				return 4;
+			};
+
+			const updateControls = () => {
+				const maxScroll = $track[0].scrollWidth - $viewport[0].clientWidth;
+				$prev.prop('disabled', $viewport.scrollLeft() <= 0);
+				$next.prop('disabled', $viewport.scrollLeft() >= maxScroll - 1);
+			};
+
+			$prev.on('click', () => {
+				const amount = getStep() * cardsPerStep();
+				$viewport[0].scrollBy({ left: -amount, behavior: 'smooth' });
+			});
+
+			$next.on('click', () => {
+				const amount = getStep() * cardsPerStep();
+				$viewport[0].scrollBy({ left: amount, behavior: 'smooth' });
+			});
+
+			$viewport.on('scroll', frappe.utils.debounce(updateControls, 50));
+			window.addEventListener('resize', frappe.utils.debounce(updateControls, 150));
+			updateControls();
+		});
+
+		webshop.webshop.shopping_cart.bind_add_to_cart_action();
+		webshop.webshop.wishlist.bind_wishlist_action();
+	});
+</script>
 {% endblock %}
