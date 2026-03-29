@@ -94,22 +94,22 @@
 			};
 
 			const updateControls = () => {
-				const maxScroll = $track[0].scrollWidth - $viewport[0].clientWidth;
-				$prev.prop('disabled', $viewport.scrollLeft() <= 0);
-				$next.prop('disabled', $viewport.scrollLeft() >= maxScroll - 1);
+				const maxScroll = $track[0].scrollWidth - $track[0].clientWidth;
+				$prev.prop('disabled', $track.scrollLeft() <= 0);
+				$next.prop('disabled', $track.scrollLeft() >= maxScroll - 1);
 			};
 
 			$prev.on('click', () => {
 				const amount = getStep() * cardsPerStep();
-				$viewport[0].scrollBy({ left: -amount, behavior: 'smooth' });
+				$track[0].scrollBy({ left: -amount, behavior: 'smooth' });
 			});
 
 			$next.on('click', () => {
 				const amount = getStep() * cardsPerStep();
-				$viewport[0].scrollBy({ left: amount, behavior: 'smooth' });
+				$track[0].scrollBy({ left: amount, behavior: 'smooth' });
 			});
 
-			$viewport.on('scroll', frappe.utils.debounce(updateControls, 50));
+			$track.on('scroll', frappe.utils.debounce(updateControls, 50));
 			window.addEventListener('resize', frappe.utils.debounce(updateControls, 150));
 			updateControls();
 		});
