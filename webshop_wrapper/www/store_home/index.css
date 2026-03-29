@@ -83,14 +83,17 @@
 }
 
 .store-home-section .section-title {
-	margin-bottom: 1rem;
+	font-size: 1.5rem;
 }
 
 .store-home .item-group-header {
+	display: flex;
+	flex-direction: row;
 	align-items: center;
 	gap: 1rem;
 	margin-bottom: 1rem;
 	padding-inline: 0;
+	padding: 0px 8px;
 }
 
 .store-home-carousel {
