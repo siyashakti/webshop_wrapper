@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 
-
 ROOT_LABELS = ("Men", "Women")
 ROOT_ALIASES = {
 	"men": {"men", "mens"},
@@ -177,6 +176,13 @@ def get_footer_groups():
 					"open_in_new_tab": 0,
 				},
 				{"label": _("Cookie Policy"), "url": "/cookie-policy", "open_in_new_tab": 0},
+				{"label": _("Shipping & Delivery"), "url": "/shipping-delivery-policy", "open_in_new_tab": 0},
+				{
+					"label": _("Return, Refund & Cancellation"),
+					"url": "/return-refund-cancellation",
+					"open_in_new_tab": 0,
+				},
+				{"label": _("Grievance Redressal"), "url": "/grievance-redressal", "open_in_new_tab": 0},
 			],
 		},
 	]
