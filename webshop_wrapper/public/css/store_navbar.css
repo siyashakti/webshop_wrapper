@@ -5,6 +5,14 @@
 	white-space: nowrap;
 }
 
+.navbar .navbar-brand img {
+	max-height: 40px;
+	max-width: 220px;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+
 html,
 body {
 	min-height: 100%;
@@ -134,6 +142,11 @@ body {
 }
 
 @media (max-width: 767.98px) {
+	.navbar .navbar-brand img {
+		max-height: 32px;
+		max-width: 180px;
+	}
+
 	.store-footer {
 		padding: 2.25rem 0 1.2rem;
 	}
