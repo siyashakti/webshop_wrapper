@@ -26,50 +26,74 @@ body {
 
 .web-footer.store-footer {
 	border-top: 1px solid var(--border-color);
-	padding: 3.5rem 0 1.8rem;
+	padding: 0;
 	margin-top: auto;
 	background-color: var(--fg-color) !important;
 	background-image: none !important;
+	height: auto;
+	overflow: visible;
 }
 
 .store-footer > .container {
-	background: transparent !important;
+	background-color: var(--fg-color) !important;
+	max-width: 100% !important;
+	width: 100%;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	padding-left: 5% !important;
+	padding-right: 0 !important;
+	padding-top: 3.75rem;
+	padding-bottom: 1.4rem;
 }
 
-.store-footer__top {
+.store-footer__main {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	column-gap: 2rem;
-	row-gap: 2rem;
+	grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+	column-gap: 3.25rem;
+	align-items: start;
 	padding-bottom: 2rem;
 	border-bottom: 1px solid var(--gray-200);
+}
+
+.store-footer__identity {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.75rem;
+}
+
+.store-footer__links-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+	column-gap: 2.1rem;
+	row-gap: 2rem;
 }
 
 .store-footer__group {
 	display: flex;
 	flex-direction: column;
-	gap: 0.9rem;
+	gap: 0.85rem;
 }
 
 .store-footer__heading {
 	margin: 0;
-	font-size: 0.9rem;
+	font-size: 0.78rem;
 	font-weight: 700;
-	letter-spacing: 0.03em;
+	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: var(--gray-800);
+	color: var(--gray-700);
 }
 
 .store-footer__group-links {
 	display: flex;
 	flex-direction: column;
-	gap: 0.55rem;
+	gap: 0.5rem;
 }
 
 .store-footer__link {
 	color: var(--text-muted);
-	font-size: 0.94rem;
-	line-height: 1.6;
+	font-size: 0.95rem;
+	line-height: 1.55;
 	text-decoration: none;
 }
 
@@ -78,30 +102,16 @@ body {
 	text-decoration: none;
 }
 
-.store-footer__bottom {
-	display: flex;
-	padding-bottom: 24px;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1.25rem;
-	padding-top: 1.35rem;
-}
-
-.store-footer__brand {
+.store-footer__meta {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	gap: 0.65rem;
-	font-weight: 700;
-	font-size: 1.02rem;
-	color: var(--text-color);
-	text-align: left;
-	white-space: nowrap;
+	padding-top: 1.1rem;
 }
 
 .store-footer__brand-logo {
-	max-width: 220px;
-	max-height: 40px;
+	max-width: 260px;
+	max-height: 64px;
 	width: auto;
 	height: auto;
 	object-fit: contain;
@@ -109,32 +119,29 @@ body {
 
 .store-footer__brand-name {
 	font-weight: 700;
+	font-size: 1.05rem;
+	line-height: 1.3;
+	color: var(--gray-900);
 }
 
-.store-footer__locale {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.65rem;
-	color: var(--gray-700);
-	font-size: 0.92rem;
-	line-height: 1;
-	white-space: nowrap;
-}
-
-.store-footer__locale-item {
-	font-weight: 500;
-}
-
-.store-footer__locale-sep {
-	color: var(--gray-500);
+.store-footer__copyright {
+	font-size: 0.9rem;
+	color: var(--gray-600);
 }
 
 @media (max-width: 991.98px) {
-	.store-footer {
-		padding: 2.75rem 0 1.45rem;
+	.store-footer > .container {
+		padding-top: 2.8rem;
+		padding-bottom: 1.25rem;
 	}
 
-	.store-footer__top {
+	.store-footer__main {
+		grid-template-columns: minmax(0, 1fr);
+		row-gap: 1.9rem;
+		column-gap: 0;
+	}
+
+	.store-footer__links-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		column-gap: 1.5rem;
 		row-gap: 1.5rem;
@@ -147,34 +154,32 @@ body {
 		max-width: 180px;
 	}
 
-	.store-footer {
-		padding: 2.25rem 0 1.2rem;
+	.web-footer.store-footer {
+		padding: 0;
 	}
 
-	.store-footer__top {
-		grid-template-columns: 1fr;
-		gap: 1.25rem;
+	.store-footer > .container {
+		padding-top: 2.25rem;
+		padding-bottom: 1rem;
+	}
+
+	.store-footer__main {
+		row-gap: 1.6rem;
 		padding-bottom: 1.4rem;
 	}
 
-	.store-footer__bottom {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.75rem;
+	.store-footer__links-grid {
+		grid-template-columns: 1fr;
+		gap: 1.25rem;
 	}
 
-	.store-footer__brand {
-		justify-content: flex-start;
-		text-align: left;
+	.store-footer__meta {
+		align-items: flex-start;
 	}
 
 	.store-footer__brand-logo {
-		max-width: 180px;
-		max-height: 32px;
-	}
-
-	.store-footer__locale {
-		font-size: 0.86rem;
+		max-width: 220px;
+		max-height: 56px;
 	}
 }
 

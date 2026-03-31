@@ -13,10 +13,11 @@ def update_website_context(context):
 	context.top_bar_items = build_top_bar_items()
 	context.footer_groups = get_footer_groups()
 	context.footer_items = [link for group in context.footer_groups for link in group.get("links", [])]
-	context.footer_locale = {"language": _("English"), "country": _("India")}
 
 	app_name = get_website_app_name()
 	app_logo = get_website_app_logo()
+
+	context.footer_copyright = get_footer_copyright(app_name)
 
 	context.store_brand_name = app_name
 	context.store_brand_logo = app_logo
@@ -131,6 +132,10 @@ def get_website_app_name():
 
 def get_website_app_logo():
 	return frappe.get_website_settings("app_logo")
+
+
+def get_footer_copyright(brand_name):
+	return _("© {0}. All rights reserved.").format(brand_name or _("Store"))
 
 
 def get_footer_links():
