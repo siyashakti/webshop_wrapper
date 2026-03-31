@@ -100,8 +100,8 @@ body {
 }
 
 .store-footer__brand-logo {
-	max-width: 140px;
-	max-height: 28px;
+	max-width: 220px;
+	max-height: 40px;
 	width: auto;
 	height: auto;
 	object-fit: contain;
@@ -166,6 +166,11 @@ body {
 	.store-footer__brand {
 		justify-content: flex-start;
 		text-align: left;
+	}
+
+	.store-footer__brand-logo {
+		max-width: 180px;
+		max-height: 32px;
 	}
 
 	.store-footer__locale {
