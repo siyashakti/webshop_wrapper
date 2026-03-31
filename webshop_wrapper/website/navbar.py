@@ -144,18 +144,22 @@ def get_footer_links():
 
 def get_footer_groups():
 	return [
-		{
-			"title": _("Get to know us"),
-			"links": [
-				{"label": _("About"), "url": "/about", "open_in_new_tab": 0},
-			],
-		},
+		# {
+		# 	"title": _("Get to know us"),
+		# 	"links": [
+		# 		{"label": _("About"), "url": "/about", "open_in_new_tab": 0},
+		# 	],
+		# },
 		{
 			"title": _("Connect with us"),
 			"links": [
-				{"label": _("Twitter"), "url": "#", "open_in_new_tab": 1},
-				{"label": _("Instagram"), "url": "#", "open_in_new_tab": 1},
-				{"label": _("Facebook"), "url": "#", "open_in_new_tab": 1},
+				# {"label": _("Twitter"), "url": "#", "open_in_new_tab": 1},
+				{
+					"label": _("Instagram"),
+					"url": "https://www.instagram.com/thesrmenterprises/",
+					"open_in_new_tab": 1,
+				},
+				# {"label": _("Facebook"), "url": "#", "open_in_new_tab": 1},
 			],
 		},
 		{
