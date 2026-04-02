@@ -97,7 +97,7 @@ def build_slideshow(homepage):
 
 	values = {
 		"show_indicators": 1,
-		"show_controls": 1,
+		"show_controls": 0,
 		"rounded": 1,
 		"slider_name": "Store Home",
 	}

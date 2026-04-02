@@ -50,7 +50,10 @@
 					this.setFeedback("{{ _('Select options to enable add to cart.') }}", "");
 				}
 			} catch (e) {
-				this.setFeedback("{{ _('Could not load variants. Please refresh and try again.') }}", "error");
+				this.setFeedback(
+					"{{ _('Could not load variants. Please refresh and try again.') }}",
+					"error",
+				);
 			}
 
 			this.bindCommonActions();
@@ -232,21 +235,27 @@
 				const data = await this.getNextAttributeAndValues(this.selected);
 				this.validOptions = {};
 				Object.keys(data.valid_options_for_attributes || {}).forEach((attribute) => {
-					this.validOptions[attribute] = new Set(data.valid_options_for_attributes[attribute] || []);
+					this.validOptions[attribute] = new Set(
+						data.valid_options_for_attributes[attribute] || [],
+					);
 				});
 
 				this.exactVariant = "";
 				this.selectedProductInfo = data.product_info || null;
-				this.selectedStockQty = data && data.available_qty ? Number(data.available_qty) : 0;
+				this.selectedStockQty =
+					data && data.available_qty ? Number(data.available_qty) : 0;
 
 				if (Array.isArray(data.exact_match) && data.exact_match.length === 1) {
 					this.exactVariant = data.exact_match[0];
 					this.enableAddButton(this.exactVariant, data);
-					this.setFeedback(__('{0} selected', [this.exactVariant]), "valid");
+					this.setFeedback(__("{0} selected", [this.exactVariant]), "valid");
 				} else if (data.filtered_items_count === 0) {
 					this.setFeedback("{{ _('No variant matches this combination.') }}", "error");
 				} else {
-					this.setFeedback(__('{0} variants match. Refine selection.', [data.filtered_items_count]), "warn");
+					this.setFeedback(
+						__("{0} variants match. Refine selection.", [data.filtered_items_count]),
+						"warn",
+					);
 				}
 
 				this.renderPriceAndStock(data);
@@ -254,7 +263,10 @@
 				this.renderControls();
 			} catch (e) {
 				this.disableAddButton();
-				this.setFeedback("{{ _('Could not validate variant selection right now.') }}", "error");
+				this.setFeedback(
+					"{{ _('Could not validate variant selection right now.') }}",
+					"error",
+				);
 			}
 		}
 
@@ -282,21 +294,19 @@
 			if (this.showPrice) {
 				if (this.selectedProductInfo && this.selectedProductInfo.price) {
 					const price = this.selectedProductInfo.price;
-					const salesPrice = frappe.utils.escape_html(price.formatted_price_sales_uom || "");
+					const salesPrice = frappe.utils.escape_html(
+						price.formatted_price_sales_uom || "",
+					);
 					const mrp = frappe.utils.escape_html(price.formatted_mrp || "");
 					const discount = frappe.utils.escape_html(
-						price.formatted_discount_percent || price.formatted_discount_rate || ""
+						price.formatted_discount_percent || price.formatted_discount_rate || "",
 					);
 					const basePrice = frappe.utils.escape_html(price.formatted_price || "");
 
 					this.$priceSlot.html(`
 						<div class="product-price" itemprop="offers" itemscope itemtype="https://schema.org/AggregateOffer">
 							<span itemprop="highPrice" content="${salesPrice}">${salesPrice}</span>
-							${
-								mrp
-									? `<small itemprop="highPrice" class="formatted-price"><s>MRP ${mrp}</s></small>`
-									: ""
-							}
+							${mrp ? `<small itemprop="highPrice" class="formatted-price"><s>MRP ${mrp}</s></small>` : ""}
 							${discount ? `<small class="ml-1 formatted-price in-green">-${discount}</small>` : ""}
 							${
 								basePrice
@@ -306,7 +316,9 @@
 						</div>
 					`);
 				} else {
-					this.$priceSlot.html(`<div class="wsw-muted-meta">${__("Select a variant to see live price")}</div>`);
+					this.$priceSlot.html(
+						`<div class="wsw-muted-meta">${__("Select a variant to see live price")}</div>`,
+					);
 				}
 			}
 
@@ -316,23 +328,28 @@
 					return;
 				}
 
-				const availableQty = variantData && variantData.available_qty ? Number(variantData.available_qty) : 0;
+				const availableQty =
+					variantData && variantData.available_qty
+						? Number(variantData.available_qty)
+						: 0;
 				this.selectedStockQty = availableQty;
 				if (availableQty > 0) {
 					this.$stockSlot.html(
-						`<span class="in-green has-stock"><span class="wsw-check-icon">&#10003;</span>${__("In Stock")} (${frappe.utils.escape_html(String(availableQty))})</span>`
+						`<span class="in-green has-stock"><span class="wsw-check-icon">&#10003;</span>${__("In Stock")}</span>`,
 					);
 				} else if (this.allowOutOfStock) {
 					this.$stockSlot.html(
-						`<span class="no-stock out-of-stock" style="color: var(--primary-color);">${__("Available on backorder")}</span>`
+						`<span class="no-stock out-of-stock" style="color: var(--primary-color);">${__("Available on backorder")}</span>`,
 					);
 				} else {
-					this.$stockSlot.html(`<span class="no-stock out-of-stock">${__("Out of stock")}</span>`);
+					this.$stockSlot.html(
+						`<span class="no-stock out-of-stock">${__("Out of stock")}</span>`,
+					);
 				}
 			}
 		}
 
-			disableAddButton() {
+		disableAddButton() {
 			this.$addBtn.prop("disabled", true);
 			this.$addBtn.removeClass("hidden");
 			this.$addBtn.removeData("item-code");
@@ -341,7 +358,9 @@
 		}
 
 		enableAddButton(itemCode, data) {
-			const isStockItem = this.selectedProductInfo ? cint(this.selectedProductInfo.is_stock_item) === 1 : true;
+			const isStockItem = this.selectedProductInfo
+				? cint(this.selectedProductInfo.is_stock_item) === 1
+				: true;
 			const availableQty = data && data.available_qty ? Number(data.available_qty) : 0;
 			this.selectedStockQty = availableQty;
 			const hasStock = availableQty > 0;
@@ -371,7 +390,11 @@
 		getSelectedQty() {
 			if (!this.$qtyInput.length) return 1;
 			const currentQty = Number.parseInt(this.$qtyInput.val(), 10) || 1;
-			if (this.selectedStockQty > 0 && currentQty > this.selectedStockQty && !this.allowOutOfStock) {
+			if (
+				this.selectedStockQty > 0 &&
+				currentQty > this.selectedStockQty &&
+				!this.allowOutOfStock
+			) {
 				return this.selectedStockQty;
 			}
 			return Math.max(1, currentQty);
@@ -384,16 +407,22 @@
 		}
 
 		getNextAttributeAndValues(selectedAttributes) {
-			return this.call("webshop_wrapper.api.variant_selector.get_next_attribute_and_values", {
-				item_code: this.itemCode,
-				selected_attributes: selectedAttributes,
-			});
+			return this.call(
+				"webshop_wrapper.api.variant_selector.get_next_attribute_and_values",
+				{
+					item_code: this.itemCode,
+					selected_attributes: selectedAttributes,
+				},
+			);
 		}
 
 		getDefaultVariantSelection() {
-			return this.call("webshop_wrapper.api.variant_selector.get_default_variant_selection", {
-				item_code: this.itemCode,
-			});
+			return this.call(
+				"webshop_wrapper.api.variant_selector.get_default_variant_selection",
+				{
+					item_code: this.itemCode,
+				},
+			);
 		}
 
 		async applyDefaultVariantSelection() {

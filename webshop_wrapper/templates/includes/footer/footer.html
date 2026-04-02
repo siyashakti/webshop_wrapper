@@ -1,37 +1,35 @@
 <footer class="web-footer store-footer" role="contentinfo">
 	<div class="container">
-		<div class="store-footer__top">
-			{% for group in footer_groups or [] %}
-				<section class="store-footer__group" aria-label="{{ _(group.title) }}">
-					<h3 class="store-footer__heading">{{ _(group.title) }}</h3>
-					<div class="store-footer__group-links">
-						{% for item in group.links or [] %}
-							<a
-								class="store-footer__link"
-								href="{{ (item.url or '#') | abs_url }}"
-								{% if item.open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-							>
-								{{ _(item.label) }}
-							</a>
-						{% endfor %}
-					</div>
-				</section>
-			{% endfor %}
-		</div>
-
-		<div class="store-footer__bottom">
-			<div class="store-footer__brand">
+		<div class="store-footer__main">
+			<div class="store-footer__identity">
 				{% if store_brand_logo %}
 					<img src="{{ store_brand_logo }}" alt="{{ store_brand_name }}" class="store-footer__brand-logo">
 				{% endif %}
-				<span class="store-footer__brand-name">{{ store_brand_name or _("Store") }}</span>
+				<div class="store-footer__brand-name">{{ store_brand_name or _("Store") }}</div>
 			</div>
 
-			<div class="store-footer__locale" aria-label="{{ _('Locale') }}">
-				<span class="store-footer__locale-item">{{ _(footer_locale.language if footer_locale else 'English') }}</span>
-				<span class="store-footer__locale-sep" aria-hidden="true">|</span>
-				<span class="store-footer__locale-item">{{ _(footer_locale.country if footer_locale else 'India') }}</span>
+			<div class="store-footer__links-grid">
+				{% for group in footer_groups or [] %}
+					<section class="store-footer__group" aria-label="{{ _(group.title) }}">
+						<h3 class="store-footer__heading">{{ _(group.title) }}</h3>
+						<div class="store-footer__group-links">
+							{% for item in group.links or [] %}
+								<a
+									class="store-footer__link"
+									href="{{ (item.url or '#') | abs_url }}"
+									{% if item.open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+								>
+									{{ _(item.label) }}
+								</a>
+							{% endfor %}
+						</div>
+					</section>
+				{% endfor %}
 			</div>
+		</div>
+
+		<div class="store-footer__meta">
+			<span class="store-footer__copyright">{{ footer_copyright }}</span>
 		</div>
 	</div>
 </footer>

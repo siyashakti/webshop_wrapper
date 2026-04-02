@@ -13,10 +13,11 @@ def update_website_context(context):
 	context.top_bar_items = build_top_bar_items()
 	context.footer_groups = get_footer_groups()
 	context.footer_items = [link for group in context.footer_groups for link in group.get("links", [])]
-	context.footer_locale = {"language": _("English"), "country": _("India")}
 
 	app_name = get_website_app_name()
 	app_logo = get_website_app_logo()
+
+	context.footer_copyright = get_footer_copyright(app_name)
 
 	context.store_brand_name = app_name
 	context.store_brand_logo = app_logo
@@ -133,6 +134,10 @@ def get_website_app_logo():
 	return frappe.get_website_settings("app_logo")
 
 
+def get_footer_copyright(brand_name):
+	return _("© {0}. All rights reserved.").format(brand_name or _("Store"))
+
+
 def get_footer_links():
 	return [
 		{"label": _("Size Chart"), "url": "/size-chart", "right": 0, "open_in_new_tab": 0},
@@ -144,18 +149,22 @@ def get_footer_links():
 
 def get_footer_groups():
 	return [
-		{
-			"title": _("Get to know us"),
-			"links": [
-				{"label": _("About"), "url": "/about", "open_in_new_tab": 0},
-			],
-		},
+		# {
+		# 	"title": _("Get to know us"),
+		# 	"links": [
+		# 		{"label": _("About"), "url": "/about", "open_in_new_tab": 0},
+		# 	],
+		# },
 		{
 			"title": _("Connect with us"),
 			"links": [
-				{"label": _("Twitter"), "url": "#", "open_in_new_tab": 1},
-				{"label": _("Instagram"), "url": "#", "open_in_new_tab": 1},
-				{"label": _("Facebook"), "url": "#", "open_in_new_tab": 1},
+				# {"label": _("Twitter"), "url": "#", "open_in_new_tab": 1},
+				{
+					"label": _("Instagram"),
+					"url": "https://www.instagram.com/thesrmenterprises/",
+					"open_in_new_tab": 1,
+				},
+				# {"label": _("Facebook"), "url": "#", "open_in_new_tab": 1},
 			],
 		},
 		{
