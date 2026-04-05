@@ -93,6 +93,7 @@ def get_next_attribute_and_values(item_code, selected_attributes):
 def _get_items_with_selected_attributes(item_code, selected_attributes):
 	item_cache = ItemVariantsCacheManager(item_code)
 	attribute_value_item_map = item_cache.get_attribute_value_item_map()
+	item_attribute_value_map = item_cache.get_item_attribute_value_map()
 
 	selected_item_sets = []
 	for attribute, value in selected_attributes.items():
@@ -100,7 +101,7 @@ def _get_items_with_selected_attributes(item_code, selected_attributes):
 		selected_item_sets.append(set(filtered_items))
 
 	if not selected_item_sets:
-		return set()
+		return set(item_attribute_value_map.keys())
 
 	return set.intersection(*selected_item_sets)
 

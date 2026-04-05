@@ -26,6 +26,7 @@
 			this.exactVariant = "";
 			this.selectedProductInfo = null;
 			this.selectedStockQty = 0;
+			this.requestVersion = 0;
 
 			if (!this.hasVariants || !this.enableVariants || !this.$controls.length) {
 				this.bindCommonActions();
@@ -220,6 +221,7 @@
 
 		async onSelectionChange() {
 			if (!this.hasVariants || !this.enableVariants) return;
+			const requestVersion = ++this.requestVersion;
 
 			if (!Object.keys(this.selected).length) {
 				this.resetSelectionState();
@@ -233,6 +235,15 @@
 
 			try {
 				const data = await this.getNextAttributeAndValues(this.selected);
+				if (requestVersion !== this.requestVersion) return;
+
+				const responseSelected = this.extractSelectedValues(
+					data.valid_options_for_attributes || {},
+				);
+				if (!this.isSameSelection(this.selected, responseSelected)) {
+					return;
+				}
+
 				this.validOptions = {};
 				Object.keys(data.valid_options_for_attributes || {}).forEach((attribute) => {
 					this.validOptions[attribute] = new Set(
@@ -250,6 +261,7 @@
 					this.enableAddButton(this.exactVariant, data);
 					this.setFeedback(__("{0} selected", [this.exactVariant]), "valid");
 				} else if (data.filtered_items_count === 0) {
+					this.restoreSelectableOptions();
 					this.setFeedback("{{ _('No variant matches this combination.') }}", "error");
 				} else {
 					this.setFeedback(
@@ -262,6 +274,7 @@
 				this.clearInvalidSelectedValues();
 				this.renderControls();
 			} catch (e) {
+				if (requestVersion !== this.requestVersion) return;
 				this.disableAddButton();
 				this.setFeedback(
 					"{{ _('Could not validate variant selection right now.') }}",
@@ -385,6 +398,37 @@
 			const validSet = this.validOptions[attribute];
 			if (!validSet) return true;
 			return validSet.has(value);
+		}
+
+		restoreSelectableOptions() {
+			this.attributeData.forEach((attr) => {
+				if (!this.selected[attr.attribute]) {
+					this.validOptions[attr.attribute] = new Set(attr.values || []);
+				}
+			});
+		}
+
+		extractSelectedValues(validOptionsForAttributes) {
+			const selected = {};
+			Object.keys(validOptionsForAttributes || {}).forEach((attribute) => {
+				const values = validOptionsForAttributes[attribute] || [];
+				if (Array.isArray(values) && values.length === 1) {
+					selected[attribute] = values[0];
+				}
+			});
+			return selected;
+		}
+
+		isSameSelection(current, fromResponse) {
+			const currentKeys = Object.keys(current || {}).sort();
+			const responseKeys = Object.keys(fromResponse || {}).sort();
+			if (currentKeys.length !== responseKeys.length) return false;
+			for (let i = 0; i < currentKeys.length; i++) {
+				const key = currentKeys[i];
+				if (key !== responseKeys[i]) return false;
+				if (current[key] !== fromResponse[key]) return false;
+			}
+			return true;
 		}
 
 		getSelectedQty() {
