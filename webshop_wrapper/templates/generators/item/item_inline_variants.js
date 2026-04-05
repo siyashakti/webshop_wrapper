@@ -1,5 +1,6 @@
 (() => {
 	const CHIP_THRESHOLD = 8;
+	const URL_VARIANT_PREFIX = "va_";
 
 	class InlineVariantSelector {
 		constructor($root) {
@@ -26,6 +27,8 @@
 			this.exactVariant = "";
 			this.selectedProductInfo = null;
 			this.selectedStockQty = 0;
+			this.requestVersion = 0;
+			this.syncingFromUrl = false;
 
 			if (!this.hasVariants || !this.enableVariants || !this.$controls.length) {
 				this.bindCommonActions();
@@ -44,8 +47,15 @@
 				this.attributeData.forEach((attr) => {
 					this.validOptions[attr.attribute] = new Set(attr.values || []);
 				});
+				const hydratedFromUrl = this.applySelectionFromUrl();
 				this.renderControls();
-				const preselected = await this.applyDefaultVariantSelection();
+				let preselected = false;
+				if (hydratedFromUrl) {
+					await this.onSelectionChange();
+					preselected = true;
+				} else {
+					preselected = await this.applyDefaultVariantSelection();
+				}
 				if (!preselected) {
 					this.setFeedback("{{ _('Select options to enable add to cart.') }}", "");
 				}
@@ -57,6 +67,7 @@
 			}
 
 			this.bindCommonActions();
+			this.bindPopState();
 		}
 
 		renderControls() {
@@ -220,6 +231,7 @@
 
 		async onSelectionChange() {
 			if (!this.hasVariants || !this.enableVariants) return;
+			const requestVersion = ++this.requestVersion;
 
 			if (!Object.keys(this.selected).length) {
 				this.resetSelectionState();
@@ -233,6 +245,17 @@
 
 			try {
 				const data = await this.getNextAttributeAndValues(this.selected);
+				if (requestVersion !== this.requestVersion) return;
+
+				if (
+					!this.isResponseCompatibleWithSelection(
+						this.selected,
+						data.valid_options_for_attributes || {},
+					)
+				) {
+					return;
+				}
+
 				this.validOptions = {};
 				Object.keys(data.valid_options_for_attributes || {}).forEach((attribute) => {
 					this.validOptions[attribute] = new Set(
@@ -250,6 +273,7 @@
 					this.enableAddButton(this.exactVariant, data);
 					this.setFeedback(__("{0} selected", [this.exactVariant]), "valid");
 				} else if (data.filtered_items_count === 0) {
+					this.restoreSelectableOptions();
 					this.setFeedback("{{ _('No variant matches this combination.') }}", "error");
 				} else {
 					this.setFeedback(
@@ -260,8 +284,10 @@
 
 				this.renderPriceAndStock(data);
 				this.clearInvalidSelectedValues();
+				this.syncSelectionToUrl();
 				this.renderControls();
 			} catch (e) {
+				if (requestVersion !== this.requestVersion) return;
 				this.disableAddButton();
 				this.setFeedback(
 					"{{ _('Could not validate variant selection right now.') }}",
@@ -288,6 +314,7 @@
 			});
 			this.disableAddButton();
 			this.renderPriceAndStock(null);
+			this.syncSelectionToUrl();
 		}
 
 		renderPriceAndStock(variantData) {
@@ -385,6 +412,106 @@
 			const validSet = this.validOptions[attribute];
 			if (!validSet) return true;
 			return validSet.has(value);
+		}
+
+		restoreSelectableOptions() {
+			this.attributeData.forEach((attr) => {
+				if (!this.selected[attr.attribute]) {
+					this.validOptions[attr.attribute] = new Set(attr.values || []);
+				}
+			});
+		}
+
+		isResponseCompatibleWithSelection(currentSelection, validOptionsForAttributes) {
+			for (const [attribute, value] of Object.entries(currentSelection || {})) {
+				const values = validOptionsForAttributes[attribute] || [];
+				if (!Array.isArray(values) || !values.includes(value)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		slugifyAttributeName(attribute) {
+			return String(attribute || "")
+				.trim()
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, "_")
+				.replace(/^_+|_+$/g, "");
+		}
+
+		getAttributeKeyMap() {
+			const map = {};
+			(this.attributeData || []).forEach((attr) => {
+				map[this.slugifyAttributeName(attr.attribute)] = attr.attribute;
+			});
+			return map;
+		}
+
+		applySelectionFromUrl() {
+			if (!this.attributeData.length) return false;
+			const params = new URLSearchParams(window.location.search);
+			const keyMap = this.getAttributeKeyMap();
+			const selected = {};
+
+			for (const [key, value] of params.entries()) {
+				if (!key.startsWith(URL_VARIANT_PREFIX) || !value) continue;
+				const slug = key.slice(URL_VARIANT_PREFIX.length);
+				const attribute = keyMap[slug];
+				if (!attribute) continue;
+
+				const attrData = this.attributeData.find((d) => d.attribute === attribute);
+				if (!attrData || !(attrData.values || []).includes(value)) continue;
+				selected[attribute] = value;
+			}
+
+			if (!Object.keys(selected).length) return false;
+			this.selected = selected;
+			return true;
+		}
+
+		syncSelectionToUrl() {
+			if (this.syncingFromUrl) return;
+			const url = new URL(window.location.href);
+			const params = url.searchParams;
+
+			Array.from(params.keys()).forEach((key) => {
+				if (key.startsWith(URL_VARIANT_PREFIX)) {
+					params.delete(key);
+				}
+			});
+
+			Object.keys(this.selected || {}).forEach((attribute) => {
+				const value = this.selected[attribute];
+				if (!value) return;
+				const slug = this.slugifyAttributeName(attribute);
+				if (!slug) return;
+				params.set(`${URL_VARIANT_PREFIX}${slug}`, value);
+			});
+
+			const nextUrl = `${url.pathname}${params.toString() ? `?${params.toString()}` : ""}${url.hash}`;
+			window.history.replaceState({ wswVariantParams: params.toString() }, "", nextUrl);
+		}
+
+		bindPopState() {
+			window.addEventListener("popstate", async () => {
+				this.syncingFromUrl = true;
+				try {
+					const applied = this.applySelectionFromUrl();
+					if (!applied) {
+						this.selected = {};
+						this.resetSelectionState();
+						this.renderControls();
+						this.setFeedback("{{ _('Select options to enable add to cart.') }}", "");
+						return;
+					}
+
+					this.renderControls();
+					await this.onSelectionChange();
+				} finally {
+					this.syncingFromUrl = false;
+				}
+			});
 		}
 
 		getSelectedQty() {
