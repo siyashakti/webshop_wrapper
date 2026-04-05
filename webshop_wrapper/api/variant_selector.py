@@ -17,6 +17,11 @@ def get_default_variant_selection(item_code):
 def get_next_attribute_and_values(item_code, selected_attributes):
 	"""Variant resolution with stock fallback to template Website Item warehouse."""
 	selected_attributes = frappe.parse_json(selected_attributes)
+	selected_attributes = {
+		attribute: str(value)
+		for attribute, value in (selected_attributes or {}).items()
+		if attribute is not None and value is not None and str(value) != ""
+	}
 
 	item_cache = ItemVariantsCacheManager(item_code)
 	item_variants_data = item_cache.get_item_variants_data()

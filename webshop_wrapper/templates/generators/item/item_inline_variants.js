@@ -44,6 +44,10 @@
 
 			try {
 				this.attributeData = await this.getAttributesAndValues();
+				this.attributeData = (this.attributeData || []).map((attr) => ({
+					...attr,
+					values: (attr.values || []).map((value) => String(value)),
+				}));
 				this.attributeData.forEach((attr) => {
 					this.validOptions[attr.attribute] = new Set(attr.values || []);
 				});
@@ -134,7 +138,7 @@
 				const $btn = $(e.currentTarget);
 				if ($btn.prop("disabled")) return;
 				const attribute = $btn.data("attribute");
-				const value = $btn.data("value");
+				const value = String($btn.attr("data-value") || "");
 				if (!attribute || !value) return;
 
 				if (this.selected[attribute] === value) {
@@ -148,7 +152,7 @@
 			this.$root.on("change", '[data-role="variant-select"]', (e) => {
 				const $select = $(e.currentTarget);
 				const attribute = $select.data("attribute");
-				const value = $select.val();
+				const value = $select.val() == null ? "" : String($select.val());
 				if (!attribute) return;
 
 				if (!value) {
@@ -424,8 +428,8 @@
 
 		isResponseCompatibleWithSelection(currentSelection, validOptionsForAttributes) {
 			for (const [attribute, value] of Object.entries(currentSelection || {})) {
-				const values = validOptionsForAttributes[attribute] || [];
-				if (!Array.isArray(values) || !values.includes(value)) {
+				const values = (validOptionsForAttributes[attribute] || []).map((v) => String(v));
+				if (!Array.isArray(values) || !values.includes(String(value))) {
 					return false;
 				}
 			}
@@ -456,13 +460,14 @@
 
 			for (const [key, value] of params.entries()) {
 				if (!key.startsWith(URL_VARIANT_PREFIX) || !value) continue;
+				const normalizedValue = String(value);
 				const slug = key.slice(URL_VARIANT_PREFIX.length);
 				const attribute = keyMap[slug];
 				if (!attribute) continue;
 
 				const attrData = this.attributeData.find((d) => d.attribute === attribute);
-				if (!attrData || !(attrData.values || []).includes(value)) continue;
-				selected[attribute] = value;
+				if (!attrData || !(attrData.values || []).includes(normalizedValue)) continue;
+				selected[attribute] = normalizedValue;
 			}
 
 			if (!Object.keys(selected).length) return false;
@@ -558,7 +563,11 @@
 				return false;
 			}
 
-			this.selected = data.selected_attributes || {};
+			const selected = {};
+			Object.keys(data.selected_attributes || {}).forEach((attribute) => {
+				selected[attribute] = String(data.selected_attributes[attribute]);
+			});
+			this.selected = selected;
 			this.renderControls();
 			await this.onSelectionChange();
 			return true;
