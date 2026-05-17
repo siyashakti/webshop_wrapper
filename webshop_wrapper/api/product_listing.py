@@ -1,7 +1,7 @@
 import json
 
 import frappe
-from frappe.utils import cint
+from frappe.utils import cint, flt
 
 from webshop.webshop.doctype.override_doctype.item_group import get_child_groups_for_website
 from webshop.webshop.product_data_engine.filters import ProductFiltersBuilder
@@ -96,3 +96,77 @@ class WrapperProductQuery(ProductQuery):
 				item.wished = True
 
 		return result, discount_list
+
+	def query_items_with_attributes(self, attributes, start=0):
+		"""Override to fix attribute filtering.
+
+		Logic:
+		1. For each attribute filter, find ALL items matching that attribute in Item Variant Attribute.
+		2. For each matched item, resolve to display item: IFNULL(variant_of, item_code).
+		   - Variant items resolve to their parent template.
+		   - Standalone/template items resolve to themselves.
+		3. Get unique display items per attribute filter.
+		4. Intersect display items across different attributes (AND logic).
+		5. Filter to only display items that have a published Website Item.
+		"""
+		published_display_items = set(
+			frappe.db.get_all("Website Item", filters={"published": 1}, pluck="item_code")
+		)
+
+		if not published_display_items:
+			return [], 0
+
+		matching_display_sets = []
+		for attribute, values in attributes.items():
+			if not isinstance(values, list):
+				values = [values]
+			if not values:
+				continue
+
+			wheres = []
+			query_values = []
+			for value in values:
+				wheres.append("(iva.attribute = %s AND iva.attribute_value = %s)")
+				query_values += [attribute, value]
+
+			attribute_query = " OR ".join(wheres)
+
+			query = """
+				SELECT DISTINCT IFNULL(i.variant_of, iva.parent)
+				FROM `tabItem Variant Attribute` iva
+				JOIN `tabItem` i ON i.item_code = iva.parent
+				WHERE ({attribute_query})
+			""".format(attribute_query=attribute_query)
+
+			result = frappe.db.sql(query, query_values)
+			display_items = {r[0] for r in result}
+			matching_display_sets.append(display_items)
+
+		if matching_display_sets:
+			valid_item_codes = set.intersection(*matching_display_sets)
+		else:
+			valid_item_codes = set()
+
+		valid_item_codes &= published_display_items
+
+		if not valid_item_codes:
+			return [], 0
+
+		self.filters.append(["item_code", "in", list(valid_item_codes)])
+
+		return self.query_items(start=start)
+
+	def filter_results_by_discount(self, fields, result):
+		"""Override to fix pagination bug where slice result was not assigned back."""
+		if fields and fields.get("discount"):
+			discount_percent = frappe.utils.flt(fields["discount"][0])
+			result = [
+				row
+				for row in result
+				if row.get("discount_percent") and row.discount_percent <= discount_percent
+			]
+
+		if self.filter_with_discount:
+			result = result[: self.page_length]
+
+		return result
